@@ -1,0 +1,802 @@
+/* Results dashboard.
+   Tokens carried from the legacy HTML dashboard (templates/dashboard_styles.py)
+   so the ported surface is recognisably the same product. Navy + green, on a
+   cool off-white — deliberately distinct from the wizard's warm pine/leaf: the
+   wizard is input, this is output. */
+.dash {
+  --d-primary: #1e3a5f;
+  --d-primary-light: #2d5a87;
+  --d-accent: #16a34a;
+  --d-accent-light: #22c55e;
+  --d-accent-bg: #f0fdf4;
+  --d-blue: #3498db;
+  --d-warning: #e67e22;
+  --d-danger: #c0392b;
+  --d-text: #1e293b;
+  --d-text-light: #64748b;
+  --d-text-muted: #94a3b8;
+  --d-border: #e2e8f0;
+  --d-border-dark: #cbd5e1;
+  --d-card: #ffffff;
+  --d-bg: #f8fafb;
+  --d-teal: #0f4c5c;
+  --d-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --d-shadow-md: 0 4px 6px rgba(0,0,0,.05), 0 2px 4px rgba(0,0,0,.03);
+  --d-radius: 8px;
+
+  background: var(--d-bg);
+  color: var(--d-text);
+  min-height: 100vh;
+  padding: 20px 24px 48px;
+  font-size: 14px;
+}
+
+.dash-loading {
+  display: flex; align-items: center; gap: 11px;
+  padding: 40px; justify-content: center; color: var(--d-text-light);
+}
+
+/* ── Project bar ─────────────────────────────────────────────────────── */
+.dash-bar {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 20px; flex-wrap: wrap;
+  background: linear-gradient(135deg, var(--d-primary), var(--d-teal));
+  color: #fff;
+  border-radius: var(--d-radius);
+  padding: 18px 22px;
+  margin-bottom: 16px;
+  box-shadow: var(--d-shadow-md);
+}
+.dash-bar h1 {
+  margin: 0 0 6px; font-size: 1.35rem; font-weight: 700;
+  letter-spacing: -.2px;
+}
+.dash-meta {
+  display: flex; flex-wrap: wrap; gap: 6px 14px;
+  font-size: .78rem; color: rgba(255,255,255,.78);
+}
+.dash-meta span:not(:last-child)::after { content: ' ·'; margin-left: 14px; }
+.dash-bar-side { display: flex; align-items: center; gap: 10px; }
+
+.stage-badge {
+  background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.28);
+  border-radius: 999px; padding: 5px 13px;
+  font-size: .74rem; font-weight: 600; white-space: nowrap;
+}
+
+.dash-btn {
+  font: inherit; font-size: .8rem; font-weight: 600; cursor: pointer;
+  border-radius: 6px; padding: 7px 14px;
+  border: 1px solid var(--d-border); background: #fff; color: var(--d-text);
+}
+.dash-btn.ghost {
+  background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.3);
+  color: #fff;
+}
+.dash-btn:hover { border-color: var(--d-accent); }
+
+/* ── Alerts ──────────────────────────────────────────────────────────── */
+.dash-alert {
+  border-radius: var(--d-radius); padding: 13px 17px; margin-bottom: 14px;
+  font-size: .86rem; border: 1px solid;
+}
+.dash-alert p { margin: 5px 0 0; font-weight: 400; }
+.dash-alert.warn { background: #fffbeb; border-color: #f5dda3; color: #92500e; }
+.dash-alert.bad  { background: #fef2f2; border-color: #f3c4c0; color: var(--d-danger); }
+.dash-alert.info { background: var(--d-accent-bg); border-color: #bfe6d1; color: #15803d; }
+
+/* ── KPI tiles ───────────────────────────────────────────────────────── */
+.kpi-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+  gap: 14px; margin-bottom: 16px;
+}
+.kpi {
+  background: var(--d-card); border: 1px solid var(--d-border);
+  border-radius: var(--d-radius); padding: 15px 17px;
+  box-shadow: var(--d-shadow);
+  display: flex; flex-direction: column; gap: 5px;
+}
+.kpi-label {
+  font-size: .7rem; font-weight: 600; letter-spacing: .5px;
+  text-transform: uppercase; color: var(--d-text-light);
+}
+.kpi-value {
+  font-size: 1.65rem; font-weight: 700; line-height: 1.1;
+  letter-spacing: -.5px; color: var(--d-primary);
+  font-variant-numeric: tabular-nums;
+}
+.kpi-value em {
+  font-style: normal; font-size: .72rem; font-weight: 600;
+  color: var(--d-text-light); margin-left: 4px;
+}
+.kpi-sub { font-size: .72rem; color: var(--d-text-light); line-height: 1.45; }
+.kpi-bar {
+  height: 6px; background: var(--d-border); border-radius: 3px;
+  overflow: hidden; margin: 3px 0 1px;
+}
+.kpi-bar span { display: block; height: 100%; border-radius: 3px; }
+
+/* ── SCORS scale ─────────────────────────────────────────────────────── */
+.scors {
+  background: var(--d-card); border: 1px solid var(--d-border);
+  border-radius: var(--d-radius); padding: 16px 18px 12px;
+  margin-bottom: 16px; box-shadow: var(--d-shadow);
+}
+.scors-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 16px; flex-wrap: wrap;
+  /* The marker flag hangs ~26px above the band strip. At 14px this heading was
+     overlapped by it whenever the project sat far enough left for the flag to
+     land under the title — a low intensity, i.e. a good result. */
+  margin-bottom: 34px;
+}
+.scors h2 { margin: 0; font-size: .95rem; font-weight: 600; }
+.scors-current { font-size: .8rem; color: var(--d-text-light); }
+.scors-current strong { color: var(--d-primary); font-size: .95rem; }
+
+.scors-track {
+  position: relative; display: flex; height: 34px;
+  border-radius: 5px; overflow: visible;
+}
+.scors-band {
+  position: relative; display: grid; place-items: center;
+  min-width: 0; overflow: hidden;
+}
+.scors-band:first-child { border-radius: 5px 0 0 5px; }
+.scors-band:last-child  { border-radius: 0 5px 5px 0; }
+.scors-band.current { outline: 2px solid var(--d-primary); outline-offset: 1px; z-index: 2; }
+.scors-letter {
+  font-size: .7rem; font-weight: 700; color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,.35);
+}
+
+.scors-marker {
+  position: absolute; top: -7px; bottom: -7px; width: 3px;
+  background: var(--d-primary); border-radius: 2px; z-index: 3;
+  transform: translateX(-50%);
+}
+.scors-marker-flag {
+  position: absolute; top: -19px; left: 50%; transform: translateX(-50%);
+  background: var(--d-primary); color: #fff;
+  font-size: .66rem; font-weight: 700; padding: 1px 6px;
+  border-radius: 3px; white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.scors-axis {
+  position: relative; height: 16px; margin-top: 5px;
+  font-size: .62rem; color: var(--d-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.scors-axis span { position: absolute; transform: translateX(-50%); }
+
+/* ── Tabs and panels ─────────────────────────────────────────────────── */
+.dash-tabs {
+  display: flex; gap: 4px; border-bottom: 2px solid var(--d-border);
+  margin-bottom: 16px;
+}
+.dash-tabs button {
+  font: inherit; font-size: .86rem; font-weight: 600; cursor: pointer;
+  background: none; border: 0; border-bottom: 3px solid transparent;
+  padding: 10px 16px; margin-bottom: -2px; color: var(--d-text-light);
+}
+.dash-tabs button:hover { color: var(--d-primary); }
+.dash-tabs button.active {
+  color: var(--d-primary); border-bottom-color: var(--d-accent);
+}
+
+.dash-card {
+  background: var(--d-card); border: 1px solid var(--d-border);
+  border-radius: var(--d-radius); padding: 16px 18px;
+  box-shadow: var(--d-shadow); margin-bottom: 14px;
+}
+.dash-card h2 { margin: 0 0 10px; font-size: .95rem; font-weight: 600; }
+.dash-hint { font-size: .78rem; color: var(--d-text-light); margin: 0; }
+
+.dash-foot {
+  margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--d-border);
+  font-size: .72rem; color: var(--d-text-muted); text-align: right;
+}
+
+@media (max-width: 640px) {
+  .dash { padding: 14px; }
+  .scors-letter { font-size: .6rem; }
+}
+
+/* ── Charts ─────────────────────────────────────────────────────────────── */
+.chart-grid {
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+}
+.chart-card {
+  background: var(--d-card); border: 1px solid var(--d-border);
+  border-radius: var(--d-radius); padding: 15px 17px 12px;
+  box-shadow: var(--d-shadow); min-width: 0;
+}
+.chart-card.wide { grid-column: 1 / -1; }
+.chart-card h3 {
+  margin: 0 0 3px; font-size: .88rem; font-weight: 600; color: var(--d-text);
+}
+.chart-note {
+  margin: 0 0 10px; font-size: .74rem; color: var(--d-text-light);
+  line-height: 1.45;
+}
+.chart-body { min-width: 0; }
+.chart-empty {
+  margin: 0; padding: 26px 12px; text-align: center;
+  font-size: .78rem; color: var(--d-text-muted); line-height: 1.5;
+}
+.chart-head-row {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 14px; margin-bottom: 10px;
+}
+.chart-head-row h3 { margin: 0; }
+
+/* Stage figures beneath the stacked bar — the exact numbers the percentages
+   inside the bar stand for. */
+.stage-figures {
+  display: flex; gap: 22px; margin: 4px 0 0; flex-wrap: wrap;
+}
+.stage-figures div { display: flex; flex-direction: column; gap: 1px; }
+.stage-figures dt {
+  font-size: .68rem; font-weight: 600; letter-spacing: .4px;
+  text-transform: uppercase; color: var(--d-text-light);
+}
+.stage-figures dd {
+  margin: 0; font-size: 1rem; font-weight: 700; color: var(--d-primary);
+  font-variant-numeric: tabular-nums;
+}
+.stage-figures dd em {
+  font-style: normal; font-size: .7rem; font-weight: 600;
+  color: var(--d-text-light); margin-left: 2px;
+}
+
+/* Two-part split */
+.split { padding: 6px 0 2px; }
+.split-track {
+  display: flex; height: 26px; border-radius: 5px; overflow: hidden;
+  background: var(--d-border);
+}
+.split-a { background: #2a78d6; }
+.split-b { background: #86b6ef; }
+.split-keys {
+  display: flex; gap: 26px; margin-top: 12px; flex-wrap: wrap;
+  font-size: .78rem;
+}
+.split-keys span { display: flex; align-items: center; gap: 6px; }
+.split-keys strong {
+  font-variant-numeric: tabular-nums; color: var(--d-primary);
+}
+.split-keys em { font-style: normal; color: var(--d-text-light); font-size: .72rem; }
+.key {
+  display: inline-block; width: 10px; height: 10px; border-radius: 3px;
+  flex-shrink: 0; margin-right: 2px;
+}
+.key-a { background: #2a78d6; }
+.key-b { background: #86b6ef; }
+
+/* Tables — the accessibility counterpart to the marks */
+.table-scroll { overflow-x: auto; }
+.dash-table {
+  width: 100%; border-collapse: collapse; font-size: .78rem;
+  background: var(--d-card);
+}
+.dash-table th, .dash-table td {
+  text-align: left; padding: 7px 10px;
+  border-bottom: 1px solid var(--d-border); white-space: nowrap;
+}
+.dash-table th {
+  font-size: .68rem; text-transform: uppercase; letter-spacing: .4px;
+  color: var(--d-text-light); font-weight: 600; background: #f8fafb;
+}
+.dash-table td.num, .dash-table th.num {
+  text-align: right; font-variant-numeric: tabular-nums;
+}
+.dash-table td .key { vertical-align: middle; }
+.dash-table tbody tr:hover { background: #f8fafb; }
+.dash-table .total-row td {
+  border-top: 2px solid var(--d-border-dark); font-weight: 600;
+  background: #f8fafb;
+}
+
+.src-tag {
+  font-size: .66rem; font-weight: 600; border-radius: 4px; padding: 2px 7px;
+}
+.src-tag.generic { background: #f1f5f9; color: #475569; }
+.src-tag.epd { background: var(--d-accent-bg); color: #15803d; }
+
+/* ── 3D viewer ──────────────────────────────────────────────────────────── */
+.viewer { display: flex; gap: 12px; align-items: stretch; flex-wrap: wrap; }
+.viewer-canvas-wrap {
+  position: relative; flex: 1 1 460px; min-width: 300px; height: 620px;
+  background: #dce6ef; border-radius: var(--d-radius); overflow: hidden;
+}
+.viewer-canvas-wrap canvas { display: block; width: 100%; height: 100%; cursor: pointer; }
+
+.viewer-tip {
+  position: absolute; pointer-events: none; z-index: 20;
+  background: rgba(15,23,42,.9); color: #fff;
+  padding: 7px 11px; border-radius: 6px; font-size: .74rem;
+  line-height: 1.45; max-width: 280px;
+  border: 1px solid rgba(255,255,255,.14);
+}
+.viewer-badge {
+  position: absolute; left: 10px; bottom: 10px; z-index: 10;
+  background: rgba(15,23,42,.72); color: #fff;
+  font-size: .68rem; padding: 4px 9px; border-radius: 5px;
+}
+.viewer-error, .viewer-empty {
+  padding: 40px 20px; text-align: center; font-size: .82rem;
+  color: var(--d-text-muted); background: #f8fafb;
+  border-radius: var(--d-radius); line-height: 1.5;
+}
+
+/* The side panel itself does NOT scroll: the legend must stay visible without
+   the user discovering it. Only the category list scrolls, which is the one
+   part that grows with the model. */
+.viewer-side {
+  width: 232px; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px;
+  font-size: .76rem; height: 620px;
+}
+.viewer-fit {
+  font: inherit; font-size: .78rem; font-weight: 600; cursor: pointer;
+  background: var(--d-teal); color: #fff; border: 0;
+  border-radius: 5px; padding: 7px 10px;
+}
+.viewer-fit:hover { background: #14657a; }
+
+.viewer-field { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+/* The categories block is the one that gives up space when the panel is short. */
+.viewer-field.grow { flex: 1 1 auto; min-height: 0; }
+.viewer-field > span {
+  font-weight: 600; font-size: .7rem; color: var(--d-text-light);
+  text-transform: uppercase; letter-spacing: .4px;
+}
+.viewer-field select {
+  font: inherit; font-size: .76rem; padding: 5px 7px;
+  border: 1px solid var(--d-border); border-radius: 5px; background: #fff;
+}
+
+.viewer-catbtns { display: flex; gap: 4px; }
+.viewer-catbtns button {
+  flex: 1; font: inherit; font-size: .68rem; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--d-border); background: #fff; color: var(--d-text-light);
+  border-radius: 4px; padding: 3px 6px;
+}
+.viewer-catbtns button:hover { border-color: var(--d-accent); color: var(--d-accent); }
+
+.viewer-cats {
+  display: flex; flex-direction: column; gap: 2px;
+  flex: 1 1 auto; min-height: 60px; overflow-y: auto;
+}
+.viewer-cat {
+  display: flex; align-items: center; gap: 6px;
+  font: inherit; font-size: .72rem; cursor: pointer; text-align: left;
+  border: 1px solid var(--d-border); background: #fff; color: var(--d-text);
+  border-radius: 4px; padding: 3px 7px;
+}
+.viewer-cat i {
+  width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0;
+  display: inline-block;
+}
+.viewer-cat.off { opacity: .42; text-decoration: line-through; }
+
+.viewer-info {
+  background: var(--d-bg); border-radius: 5px; padding: 8px 10px;
+  min-height: 96px; font-size: .73rem; flex-shrink: 0;
+}
+.viewer-info > strong { display: block; font-size: .8rem; margin-bottom: 5px; word-break: break-word; }
+.viewer-info em { color: var(--d-text-muted); }
+.viewer-info dl {
+  display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; margin: 0;
+}
+.viewer-info dt { color: var(--d-text-light); }
+.viewer-info dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.viewer-info .nodata { color: var(--d-text-muted); font-weight: 400; }
+
+/* No `margin-top:auto` here: inside a scrolling flex column it pushes the
+   legend below the visible area, which clipped it on a real model. */
+.viewer-legend {
+  flex-shrink: 0; background: var(--d-bg); border-radius: 5px;
+  padding: 7px 9px; display: flex; flex-direction: column; gap: 3px;
+  font-size: .7rem;
+}
+.viewer-legend b { font-size: .7rem; margin-bottom: 2px; }
+.viewer-legend span { display: flex; align-items: center; gap: 5px; }
+.viewer-legend i {
+  width: 13px; height: 9px; border-radius: 2px; display: inline-block;
+  flex-shrink: 0;
+}
+.viewer-ramp { display: flex; gap: 0; }
+.viewer-ramp i { width: 100%; height: 12px; border-radius: 0; }
+.viewer-ramp-labels {
+  display: flex; justify-content: space-between;
+  font-size: .62rem; color: var(--d-text-muted);
+}
+
+@media (max-width: 860px) {
+  .viewer-side { width: 100%; max-height: none; }
+  .viewer-canvas-wrap { height: 400px; }
+  .viewer-side { height: auto; }
+}
+
+/* ── Detail table filters ───────────────────────────────────────────────── */
+.filter-row {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  margin-bottom: 10px;
+}
+.filter-row select {
+  font: inherit; font-size: .78rem; padding: 5px 8px;
+  border: 1px solid var(--d-border); border-radius: 5px; background: #fff;
+  color: var(--d-text);
+}
+.filter-summary {
+  margin-left: auto; font-size: .78rem; color: var(--d-text-light);
+  font-variant-numeric: tabular-nums;
+}
+.filter-summary strong { color: var(--d-primary); }
+
+.detail-scroll { max-height: 420px; overflow-y: auto; }
+.detail-scroll thead th { position: sticky; top: 0; z-index: 2; }
+.dash-table td.cell-wide {
+  white-space: normal; max-width: 300px; word-break: break-word;
+}
+.dash-table tr.row-zero td { color: var(--d-text-muted); }
+.empty-cell {
+  text-align: center; padding: 26px; color: var(--d-text-muted);
+}
+.show-more { margin-top: 10px; }
+
+/* ── Slide-over panel ───────────────────────────────────────────────────── */
+.panel-scrim {
+  position: fixed; inset: 0; background: rgba(15,23,42,.42);
+  opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 90;
+}
+.panel-scrim.show { opacity: 1; pointer-events: auto; }
+
+.slide-panel {
+  position: fixed; top: 0; right: 0; bottom: 0; width: min(560px, 94vw);
+  background: var(--d-card); box-shadow: -6px 0 24px rgba(0,0,0,.16);
+  z-index: 91; display: flex; flex-direction: column;
+  transform: translateX(100%); transition: transform .22s ease;
+}
+.slide-panel.open { transform: translateX(0); }
+
+.slide-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 15px 20px; border-bottom: 1px solid var(--d-border);
+  flex-shrink: 0;
+}
+.slide-head h2 { margin: 0; font-size: 1rem; font-weight: 600; }
+.slide-body { overflow-y: auto; padding: 4px 20px 28px; }
+
+.slide-section { padding: 16px 0; border-bottom: 1px solid var(--d-border); }
+.slide-section:last-child { border-bottom: 0; }
+.slide-section h3 {
+  margin: 0 0 10px; font-size: .76rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .5px; color: var(--d-text-light);
+}
+.slide-row {
+  display: flex; justify-content: space-between; gap: 16px;
+  padding: 4px 0; font-size: .82rem; align-items: baseline;
+}
+.slide-row > span { color: var(--d-text-light); flex-shrink: 0; }
+.slide-row > strong { text-align: right; font-weight: 600; }
+.slide-note {
+  margin: 9px 0 0; font-size: .75rem; color: var(--d-text-light);
+  line-height: 1.5;
+}
+.slide-list {
+  margin: 0; padding-left: 18px; font-size: .8rem;
+  color: var(--d-text-light); line-height: 1.6;
+}
+.slide-list li { margin-bottom: 5px; }
+.slide-list strong { color: var(--d-text); }
+
+.slide-table { width: 100%; border-collapse: collapse; font-size: .78rem; }
+.slide-table th, .slide-table td {
+  text-align: left; padding: 5px 8px;
+  border-bottom: 1px solid var(--d-border);
+}
+.slide-table th {
+  font-size: .68rem; text-transform: uppercase; letter-spacing: .4px;
+  color: var(--d-text-light); font-weight: 600;
+}
+.slide-table td.num, .slide-table th.num {
+  text-align: right; font-variant-numeric: tabular-nums;
+}
+.slide-table td.cell-wide { white-space: normal; word-break: break-word; }
+
+/* ── Decarbonisation ────────────────────────────────────────────────────── */
+.stage-lead h3 { font-size: 1.02rem; margin-bottom: 5px; }
+
+.opportunity {
+  display: flex; gap: 22px; align-items: flex-start; flex-wrap: wrap;
+  background: var(--d-accent-bg); border: 1px solid #bfe6d1;
+  border-radius: var(--d-radius); padding: 14px 17px; margin-top: 12px;
+}
+.opp-label {
+  display: block; font-size: .68rem; font-weight: 600; letter-spacing: .5px;
+  text-transform: uppercase; color: #15803d;
+}
+.opp-value {
+  display: block; font-size: 1.7rem; font-weight: 700; color: #15803d;
+  line-height: 1.15; font-variant-numeric: tabular-nums; letter-spacing: -.5px;
+}
+.opp-value em {
+  font-style: normal; font-size: .72rem; font-weight: 600; margin-left: 3px;
+}
+.opp-sub { font-size: .74rem; color: #166534; }
+.opp-note {
+  flex: 1 1 260px; margin: 0; font-size: .76rem; color: #166534;
+  line-height: 1.55;
+}
+
+.action-list {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.action-list li {
+  display: flex; gap: 13px; align-items: flex-start;
+  border: 1px solid var(--d-border); border-radius: var(--d-radius);
+  padding: 11px 14px; background: #fff;
+}
+.action-rank {
+  width: 24px; height: 24px; flex-shrink: 0; border-radius: 50%;
+  background: var(--d-primary); color: #fff;
+  display: grid; place-items: center; font-size: .74rem; font-weight: 700;
+}
+.action-body { flex: 1; min-width: 0; }
+.action-body strong { display: block; font-size: .86rem; }
+.action-body em {
+  display: block; font-style: normal; font-size: .75rem;
+  color: var(--d-text-light); margin-top: 2px; line-height: 1.45;
+}
+.action-body em.engine-note { color: var(--d-text-muted); font-size: .72rem; }
+.action-figure { text-align: right; flex-shrink: 0; }
+.action-figure strong {
+  display: block; font-size: 1.05rem; color: var(--d-accent);
+  font-variant-numeric: tabular-nums;
+}
+.action-figure strong em {
+  font-style: normal; font-size: .68rem; font-weight: 600;
+}
+.action-figure > span { font-size: .7rem; color: var(--d-text-light); }
+
+.matrix tr.locked td { opacity: .6; }
+.matrix .matrix-note {
+  display: block; font-style: normal; font-size: .73rem;
+  color: var(--d-text-light); margin-top: 2px;
+  white-space: normal; line-height: 1.4;
+}
+.bar-cell { position: relative; display: inline-block; min-width: 90px; }
+.bar-cell .bar-fill {
+  position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+  height: 15px; background: rgba(22,163,74,.16); border-radius: 3px; z-index: 0;
+}
+.bar-cell b { position: relative; z-index: 1; }
+em.na { color: var(--d-text-muted); font-style: normal; }
+
+.hotspot-list {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 13px;
+}
+.hotspot-head {
+  display: flex; justify-content: space-between; gap: 12px;
+  font-size: .82rem; margin-bottom: 4px;
+}
+.hotspot-head span {
+  color: var(--d-text-light); font-variant-numeric: tabular-nums;
+}
+.hotspot-bar {
+  height: 7px; background: var(--d-border); border-radius: 4px; overflow: hidden;
+}
+.hotspot-bar span {
+  display: block; height: 100%; background: var(--d-primary); border-radius: 4px;
+}
+.hotspot-list em {
+  display: block; font-style: normal; font-size: .74rem;
+  color: var(--d-text-light); margin-top: 5px; line-height: 1.45;
+}
+
+.you {
+  background: var(--d-primary); color: #fff; font-size: .64rem;
+  font-weight: 600; border-radius: 3px; padding: 1px 6px; margin-right: 6px;
+}
+.best { color: var(--d-accent); font-weight: 600; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Panels ported from the legacy HTML dashboard.
+   The legacy surface is denser than this one was: smaller type, tighter
+   padding, navy table headers. That density is not decoration — it is what
+   lets a reviewer see the whole picture without scrolling, which is how the
+   report is actually used.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* A tighter table for the reference panels. The main .dash-table keeps its
+   roomier spacing; these carry 4-6 rows of dense figures. */
+.dash-table.compact { font-size: .8rem; }
+.dash-table.compact th { padding: 6px 9px; font-size: .74rem; }
+.dash-table.compact td { padding: 5px 9px; }
+.dash-table td.empty-cell {
+  text-align: center; color: var(--d-text-muted);
+  font-size: .78rem; padding: 12px 9px;
+}
+.dash-table td.good, .dash-table .good { color: var(--d-accent); font-weight: 600; }
+
+/* Navy header bar, as the legacy data tables have. */
+.dash-table thead th {
+  background: var(--d-primary);
+  color: #fff;
+  font-weight: 500;
+}
+.dash-table thead th:first-child { border-radius: 5px 0 0 0; }
+.dash-table thead th:last-child { border-radius: 0 5px 0 0; }
+.dash-table tbody tr:nth-child(even) { background: #f8fafc; }
+.dash-table tbody tr:hover { background: rgba(22,163,74,.05); }
+.dash-table tbody tr.total-row { background: var(--d-accent-bg); font-weight: 600; }
+
+/* ── Stage focus ─────────────────────────────────────────────────────── */
+.findings { list-style: none; margin: 8px 0 0; padding: 0; }
+.findings li {
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 6px 0; font-size: .83rem; color: var(--d-text);
+  border-bottom: 1px solid var(--d-border);
+}
+.findings li:last-child { border-bottom: none; }
+.findings .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  flex-shrink: 0; margin-top: 6px;
+}
+.findings .dot-go { background: var(--d-accent); }
+.findings .dot-hold { background: var(--d-warning); }
+.findings-head {
+  font-size: .78rem; font-weight: 600; color: var(--d-warning);
+  margin: 12px 0 0;
+}
+
+/* ── Slab-system footnote on the substructure card ───────────────────── */
+.slab-note {
+  margin: 10px 0 0; padding: 8px 10px;
+  background: var(--d-bg); border-radius: 6px;
+  font-size: .78rem; color: var(--d-text-light); line-height: 1.5;
+}
+.slab-note strong { color: var(--d-text); }
+
+/* ── Benchmark box beside the rating ─────────────────────────────────── */
+.scors-head-side { display: flex; align-items: center; gap: 14px; }
+.benchmark-box {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 5px 12px; min-width: 84px;
+  background: var(--d-bg);
+  border: 1px solid var(--d-border);
+  border-radius: 6px;
+}
+.bm-label {
+  font-size: .62rem; text-transform: uppercase; letter-spacing: .5px;
+  color: var(--d-text-muted);
+}
+.bm-value { font-size: 1.05rem; font-weight: 700; color: var(--d-primary); }
+.bm-diff { font-size: .66rem; font-weight: 600; }
+.bm-diff.good { color: var(--d-accent); }
+.bm-diff.over { color: var(--d-warning); }
+
+/* ── Estimate-range band (decarbonisation stage card) ────────────────── */
+.range-band {
+  margin-top: 14px; padding: 12px 14px;
+  background: #fff; border: 1px solid var(--d-border);
+  border-radius: 8px;
+}
+.range-head { font-size: .8rem; color: var(--d-text-light); margin-bottom: 8px; }
+.range-nums { color: var(--d-accent); }
+.range-mid { color: var(--d-text-muted); }
+.range-track {
+  position: relative; height: 20px;
+  background: #e2e8f0; border-radius: 6px; overflow: hidden;
+}
+/* The band occupies the middle half of the track: this shows the WIDTH of the
+   uncertainty, not a position on an absolute scale. */
+.range-fill {
+  position: absolute; left: 25%; width: 50%; height: 100%;
+  background: rgba(22,163,74,.25);
+}
+.range-mark {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  width: 3px; height: 100%; background: var(--d-accent); border-radius: 2px;
+}
+.range-foot {
+  display: flex; justify-content: space-between;
+  font-size: .7rem; color: var(--d-text-muted); margin-top: 4px;
+}
+.range-pct { color: var(--d-accent); font-weight: 600; }
+
+/* ── Audit trail ─────────────────────────────────────────────────────── */
+.audit {
+  background: #fffbeb;
+  border-left: 4px solid #d97706;
+}
+.audit h3 { color: #92400e; }
+.audit-cols {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 18px; margin-top: 4px;
+}
+.audit-cols h4 {
+  margin: 0 0 6px; font-size: .8rem; font-weight: 700; color: var(--d-text);
+}
+.audit-cols ul {
+  margin: 0; padding-left: 16px;
+  font-size: .81rem; color: #475569; line-height: 1.75;
+}
+.audit-cols .warn-item { color: #d97706; font-weight: 600; }
+@media (max-width: 760px) {
+  .audit-cols { grid-template-columns: 1fr; gap: 12px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Floating sidebar + the detailed-emissions drawer.
+   Ported from the legacy dashboard, which pinned three tabs to the right
+   edge so Emissions, Assumptions and Value Engineering stayed reachable
+   anywhere in a very long report.
+   ══════════════════════════════════════════════════════════════════════ */
+.sidebar-actions {
+  position: fixed; right: 0; top: 50%; transform: translateY(-50%);
+  z-index: 88; display: flex; flex-direction: column; gap: 4px;
+}
+.sidebar-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 10px 13px;
+  background: var(--d-primary); color: #fff;
+  border: none; border-radius: 8px 0 0 8px;
+  cursor: pointer; white-space: nowrap;
+  font-size: .72rem; font-weight: 600; font-family: inherit;
+  box-shadow: -2px 2px 8px rgba(0,0,0,.15);
+  transition: background .2s, padding-right .2s;
+}
+.sidebar-btn:hover { background: var(--d-accent); padding-right: 21px; }
+.sidebar-btn:focus-visible {
+  outline: 2px solid var(--d-accent); outline-offset: -2px;
+}
+.sidebar-btn span { font-size: .9rem; line-height: 1; }
+
+/* Below this width a fixed right rail sits on top of the content it exists to
+   help you read; and on paper a floating control is just noise. */
+@media (max-width: 900px) { .sidebar-actions { display: none; } }
+@media print {
+  .sidebar-actions, .slide-panel, .panel-scrim { display: none !important; }
+}
+
+/* The emissions drawer carries nine columns, so it needs more room than the
+   assumptions panel's prose-width sections. */
+.slide-panel.wide { width: min(1080px, 96vw); }
+
+.drawer-table { font-size: .73rem; }
+.drawer-table th { position: sticky; top: 0; z-index: 1; }
+.drawer-table td { vertical-align: top; }
+.drawer-table td.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .7rem; color: var(--d-text-light); white-space: nowrap;
+}
+/* The element's own description under its material — the legacy drawer's
+   two-line material cell, which is what makes a grouped member readable. */
+.drawer-table td .sub {
+  display: block; font-size: .68rem; color: var(--d-text-light);
+  margin-top: 2px; white-space: normal; word-break: break-word;
+}
+.drawer-table tr.row-zero td { color: var(--d-text-muted); }
+.drawer-table .na { font-style: italic; color: var(--d-text-muted); }
+
+/* The drawer's body is the scroll container, so its table scrolls with it
+   rather than trapping a second scrollbar inside a fixed-height box. */
+.slide-panel.wide .slide-body { padding: 4px 18px 28px; }
+.slide-panel.wide .table-scroll { overflow-x: auto; }
+
+/* Formula lines in the assumptions drawer. Monospaced numerals so the
+   coefficients line up and can be checked against the SEAI tables. */
+.formula {
+  margin: 8px 0 0; padding: 8px 10px;
+  background: var(--d-bg); border-left: 2px solid var(--d-border-dark);
+  border-radius: 0 5px 5px 0;
+  font-size: .76rem; line-height: 1.6; color: var(--d-text-light);
+  font-variant-numeric: tabular-nums;
+}
+.formula b { color: var(--d-text); font-weight: 700; }
